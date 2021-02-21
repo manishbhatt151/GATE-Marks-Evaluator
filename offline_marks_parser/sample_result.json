@@ -4,19 +4,19 @@
         "question_short_id": "g5",
         "question_type": "MCQ",
         "question_long_id": "8232513095",
-        "response_given": "1",
-        "actual_answer": "\"1\"",
+        "response_given": "C",
+        "actual_answer": "\"C\"",
         "subject_id": "1",
-        "marks_obtained": "+1.00"
+        "marks_obtained": 1.0
     },
     {
         "question_mark": "1",
         "question_short_id": "g2",
         "question_type": "MCQ",
         "question_long_id": "8232513092",
-        "response_given": "2",
-        "actual_answer": "\"2\"",
+        "response_given": "B",
+        "actual_answer": "\"A\"",
         "subject_id": "1",
-        "marks_obtained": "+1.00"
+        "marks_obtained": -0.3333333333333333
     }
 ]

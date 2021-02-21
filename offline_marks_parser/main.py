@@ -8,11 +8,11 @@ cmd_args = str(sys.argv)
 def getMarksFromData(parsed_data_list):
     one_mark="1"
     two_mark="2"
-    c_one_mark="+1.00"
-    i_one_mark="-0.33"
-    c_two_mark="+2.00"
-    i_two_mark="-0.67"
-    zero_mark="0.00"
+    c_one_mark=1.0
+    i_one_mark=-1.0 * (1.0 / 3.0)
+    c_two_mark=2.0
+    i_two_mark=-1.0 * (2.0 / 3.0)
+    zero_mark=0
 
     for item in parsed_data_list:
         if item['response_given'] != "--":
@@ -60,7 +60,7 @@ def getMarksFromData(parsed_data_list):
 session = HTMLSession()
 
 try:
-    r = session.get('https://www.digialm.com//per/g01/pub/585/touchstone/AssessmentQPHTMLMode1//GATE2060/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.html')
+    r = session.get('https://www.digialm.com//per/g01/pub/585/touchstone/AssessmentQPHTMLMode1//GATE2060/xxxxxxxxxxxxxxxxxxxxxxxx.html')
     if r.status_code != 200:
         print("Getting this error: ", r.status_code)
         sys.exit(-1)
@@ -113,8 +113,8 @@ for i in match:
 
     for j in questions:
         parsed_subdata = dict()
-        question_number = j.find('table.questionRowTbl', first=True).find('td.bold')[1].find('img', first=True)
-        question_image_name = str(question_number.attrs['name'])
+        question_number_list = j.find('table.questionRowTbl', first=True).find('img')
+        question_image_name = str(question_number_list[0].attrs['name'])
 
         last_question_number = question_image_name.split(".")[0].split("q")[-1]
         # print(last_question_number)
@@ -143,14 +143,29 @@ for i in match:
 
         parsed_subdata['question_type'] = question_menu_table[0].text.rstrip()
         parsed_subdata['question_long_id'] = question_menu_table[1].text.rstrip()
-        if question_menu_table[2] == "Not Answered":
+        
+        # print(question_menu_table[2].text)
+        if question_menu_table[2].text.rstrip() == "Not Answered" or question_menu_table[2].text.rstrip().find("Not") != -1:
             parsed_subdata['response_given'] = "--"
         else:
             if parsed_subdata['question_type'] == "NAT":
                 nat_answer = j.find('table.questionRowTbl', first=True).find('td.bold')[-1].text
                 parsed_subdata['response_given'] = nat_answer.rstrip()
             else:
-                parsed_subdata['response_given'] = question_menu_table[3].text.rstrip()
+                option_code = list()
+                mapped_option_code = list()
+                for i in range(1, len(question_number_list)):
+                    option_code.append(str(question_number_list[i].attrs['name']).rstrip().split(".")[0].split(last_question_number)[-1].upper())
+                # print(parsed_subdata['question_type'], option_code, parsed_subdata['question_long_id'])
+
+                given_response_sheet = question_menu_table[3].text.rstrip().split(",")
+
+                for i in given_response_sheet:
+                    mapped_option_code.append(option_code[int(i) - 1])
+
+                compress_mapped_option = ",".join(mapped_option_code)
+                # print(compress_mapped_option)
+                parsed_subdata['response_given'] = compress_mapped_option
 
             # if(labels.text == "NAT"):
             #     ques_type = j.find('table.questionRowTbl', first=True).find('td.bold')[-1].text
@@ -166,7 +181,6 @@ for i in match:
 final_data = getMarksFromData(parsed_data_list)
 
 # Writing to the required json
-
 json_final_data = json.dumps(final_data)
 print(json_final_data)
 
@@ -175,3 +189,4 @@ print(json_final_data)
 #     json.dump(final_data, f, ensure_ascii=False, indent=4)
 
 print("JSON data created. Exiting!")
+
