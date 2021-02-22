@@ -1,22 +1,22 @@
 [
     {
-        "question_mark": "1",
+        "question_mark": 1.0,
         "question_short_id": "g5",
         "question_type": "MCQ",
         "question_long_id": "8232513095",
         "response_given": "C",
-        "actual_answer": "\"C\"",
+        "actual_answer": "C",
         "subject_id": "1",
-        "marks_obtained": 1.0
+        "marks_obtained": 2.0
     },
     {
-        "question_mark": "1",
+        "question_mark": 1.0,
         "question_short_id": "g2",
         "question_type": "MCQ",
         "question_long_id": "8232513092",
         "response_given": "B",
-        "actual_answer": "\"A\"",
+        "actual_answer": "A",
         "subject_id": "1",
-        "marks_obtained": -0.3333333333333333
+        "marks_obtained": -0.6666666666666666
     }
 ]

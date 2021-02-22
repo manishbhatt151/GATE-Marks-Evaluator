@@ -1,8 +1,31 @@
 from requests_html import HTML, HTMLSession
 import sys
 import json
+import argparse
 
 cmd_args = str(sys.argv)
+
+# Command line arguments.
+response_url = None
+answer_key_url = None
+file_name = None
+cmd_parser = argparse.ArgumentParser(
+    description="Parses candidate's response sheet, calculates marks, and stores results as JSON.")
+cmd_parser.add_argument(
+    '-r', '--response', help="Candidate's response key URL.", dest='response_url')
+cmd_parser.add_argument(
+    '-k', '--key', help="Answer key URL.", dest='answer_key_url')
+cmd_parser.add_argument('-o', '--output', help="Print output to file.", dest='file_name')
+args = cmd_parser.parse_args()
+
+response_url = args.response_url
+answer_key_url = args.answer_key_url
+file_name = args.file_name
+
+if(response_url == None):
+    response_url = input('Enter Response Sheet URL: ')
+if(answer_key_url == None):
+    answer_key_url = input('Enter Answer Key URL: ')
 
 # Function to set marks to the items (needs refactoring, maybe later!!)
 def getMarksFromData(parsed_data_list):
@@ -17,13 +40,13 @@ def getMarksFromData(parsed_data_list):
     for item in parsed_data_list:
         if item['response_given'] != "--":
             if item['question_type'] == "MCQ":
-                if item['response_given'] == item['actual_answer'].replace('"', ''):
+                if item['response_given'] == item['actual_answer']:
                     item['marks_obtained'] = c_one_mark if item['question_mark'] == one_mark else c_two_mark
                 else:
                     item['marks_obtained'] = i_one_mark if item['question_mark'] == one_mark else i_two_mark
             
             elif item['question_type'] == "MSQ":
-                expected_list = item['actual_answer'].replace('"', '').split(";")
+                expected_list = item['actual_answer'].split(";")
                 actual_list = item['response_given'].split(",")
 
                 if sorted(expected_list) == actual_list:
@@ -33,14 +56,14 @@ def getMarksFromData(parsed_data_list):
 
             elif item['question_type'] == "NAT":
                 if item['actual_answer'].find(':') != -1:
-                    expected_range = item['actual_answer'].replace('"', '').split(":")
+                    expected_range = item['actual_answer'].split(":")
                     fresponse_given = float(item['response_given'])
                     if fresponse_given >= float(expected_range[0]) and fresponse_given <= float(expected_range[1]):
                         item['marks_obtained'] = c_one_mark if item['question_mark'] == one_mark else c_two_mark
                     else:
                         item['marks_obtained'] = i_one_mark if item['question_mark'] == one_mark else i_two_mark
                 else:
-                    expected_answer = item['actual_answer'].replace('"', '')
+                    expected_answer = item['actual_answer']
                     response_given = item['response_given']
                     if expected_answer == response_given:
                         item['marks_obtained'] = c_one_mark if item['question_mark'] == one_mark else c_two_mark
@@ -60,7 +83,7 @@ def getMarksFromData(parsed_data_list):
 session = HTMLSession()
 
 try:
-    r = session.get('https://www.digialm.com//per/g01/pub/585/touchstone/AssessmentQPHTMLMode1//GATE2060/xxxxxxxxxxxxxxxxxxxxxxxx.html')
+    r = session.get(response_url)
     if r.status_code != 200:
         print("Getting this error: ", r.status_code)
         sys.exit(-1)
@@ -71,7 +94,7 @@ except:
 html = r.html
 
 try:
-    r2 = session.get('https://docs.google.com/spreadsheets/d/e/2PACX-1vRcxWRENCxZJe6aPTC2ospREhxroCzayF1KSTdSNyVVHmybITJ3CCzgcdZLPu2SOlSy8aw8KcpssgOi/pubhtml?gid=0&single=true')   
+    r2 = session.get(answer_key_url)   
     if r.status_code != 200:
         print("Getting this error: ", r.status_code)
         sys.exit(-1)
@@ -88,18 +111,19 @@ question_subject_dict = dict()
 parsed_data_list = list()
 apt_code="g"
 cs_code="c"
-one_mark="1"
-two_mark="2"
+one_mark=1.0
+two_mark=2.0
 
 # Parsing the GO answer key spreadsheet (this depends on the sheet formatting)
 whole_table = html2.find('table.waffle', first = True)
-question_and_answer = whole_table.find('td.s0')
-subject_id = whole_table.find('td.s2')
 
-for i in range(4, len(question_and_answer), 2):
-    j = 0
-    question_answer_dict[question_and_answer[i-1].text.rstrip()] = question_and_answer[i].text.rstrip()
-    question_subject_dict[question_and_answer[i-1].text.rstrip()] = subject_id[j].text.rstrip()
+all_data = whole_table.find('td')
+# question_and_answer = whole_table.find('td.s0')
+# subject_id = whole_table.find('td.s2')
+
+for i in range(3, len(all_data), 4):
+    question_answer_dict[all_data[i-3].text.rstrip()] = all_data[i-2].text.rstrip().replace('"', '')
+    question_subject_dict[all_data[i-3].text.rstrip()] = all_data[i].text.rstrip()
 
 # print(question_answer_dict, question_subject_dict)
 
@@ -181,12 +205,13 @@ for i in match:
 final_data = getMarksFromData(parsed_data_list)
 
 # Writing to the required json
-json_final_data = json.dumps(final_data)
-print(json_final_data)
-
+if file_name == None:
+    json_final_data = json.dumps(final_data, indent=4)
+    print(json_final_data)
+else:
 # If write to a file
-# with open('result.json', 'w', encoding='utf-8') as f:
-#     json.dump(final_data, f, ensure_ascii=False, indent=4)
+    with open(file_name, 'w', encoding='utf-8') as f:
+        json.dump(final_data, f, ensure_ascii=False, indent=4)
 
-print("JSON data created. Exiting!")
+print("\n\nJSON data created. Exiting!")
 
