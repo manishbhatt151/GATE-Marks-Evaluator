@@ -7,7 +7,7 @@
         "response_given": "C",
         "actual_answer": "C",
         "subject_id": "1",
-        "marks_obtained": 2.0
+        "marks_obtained": 1.0
     },
     {
         "question_mark": 1.0,
@@ -17,6 +17,6 @@
         "response_given": "B",
         "actual_answer": "A",
         "subject_id": "1",
-        "marks_obtained": -0.6666666666666666
+        "marks_obtained": -0.3333333333333333
     }
 ]

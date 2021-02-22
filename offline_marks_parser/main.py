@@ -29,8 +29,8 @@ if(answer_key_url == None):
 
 # Function to set marks to the items (needs refactoring, maybe later!!)
 def getMarksFromData(parsed_data_list):
-    one_mark="1"
-    two_mark="2"
+    one_mark=1.0
+    two_mark=2.0
     c_one_mark=1.0
     i_one_mark=-1.0 * (1.0 / 3.0)
     c_two_mark=2.0
