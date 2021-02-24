@@ -1,3 +1,4 @@
+
 from requests_html import HTML, HTMLSession
 import sys
 import json
@@ -52,7 +53,7 @@ def getMarksFromData(parsed_data_list):
                 if sorted(expected_list) == actual_list:
                     item['marks_obtained'] = c_one_mark if item['question_mark'] == one_mark else c_two_mark
                 else:
-                    item['marks_obtained'] = i_one_mark if item['question_mark'] == one_mark else i_two_mark
+                    item['marks_obtained'] = zero_mark
 
             elif item['question_type'] == "NAT":
                 if item['actual_answer'].find(':') != -1:
@@ -61,14 +62,14 @@ def getMarksFromData(parsed_data_list):
                     if fresponse_given >= float(expected_range[0]) and fresponse_given <= float(expected_range[1]):
                         item['marks_obtained'] = c_one_mark if item['question_mark'] == one_mark else c_two_mark
                     else:
-                        item['marks_obtained'] = i_one_mark if item['question_mark'] == one_mark else i_two_mark
+                        item['marks_obtained'] = zero_mark
                 else:
                     expected_answer = item['actual_answer']
                     response_given = item['response_given']
                     if expected_answer == response_given:
                         item['marks_obtained'] = c_one_mark if item['question_mark'] == one_mark else c_two_mark
                     else:
-                        item['marks_obtained'] = i_one_mark if item['question_mark'] == one_mark else i_two_mark
+                        item['marks_obtained'] = zero_mark
         else:
             item['marks_obtained'] = zero_mark
     
